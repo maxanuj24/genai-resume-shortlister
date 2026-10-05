@@ -1,0 +1,50 @@
+{
+  "name": "Karnatakaskillscontacteducationsummarywork Experiencesenior",
+  "file": "Vinat_DataEngineer_Resume.pdf",
+  "raw_response": {
+    "skills_score": 20,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 10,
+    "matched_skills": [
+      "airflow",
+      "sql"
+    ],
+    "missing_skills": [
+      "Python",
+      "Spark",
+      "PySpark",
+      "Kafka",
+      "Data Modeling"
+    ],
+    "strengths": [
+      "airflow",
+      "sql"
+    ],
+    "weaknesses": [
+      "Python",
+      "Spark",
+      "PySpark",
+      "Kafka",
+      "Data Modeling"
+    ],
+    "explanation": "The candidate has some relevant skills like airflow and SQL, but is missing critical skills like Python, Spark, PySpark, and Kafka. The candidate also lacks experience and education relevant to the Data Engineer role."
+  },
+  "cleaned_missing_skills": [
+    "Python",
+    "PySpark",
+    "Kafka",
+    "Data Modeling"
+  ],
+  "parsed_resume_skills": [
+    "airflow",
+    "gcp",
+    "sql",
+    "java",
+    "hadoop",
+    "etl",
+    "data warehousing",
+    "spark",
+    "azure"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "name": "Ronak Kumarronak",
+  "file": "Ronak.pdf",
+  "raw_response": {
+    "skills_score": 20,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 10,
+    "matched_skills": [
+      "hadoop",
+      "spark",
+      "airflow",
+      "sql",
+      "etl"
+    ],
+    "missing_skills": [
+      "Python",
+      "PySpark",
+      "Kafka"
+    ],
+    "strengths": [
+      "Familiarity with big data technologies such as Hadoop and Spark"
+    ],
+    "weaknesses": [
+      "Lack of experience in using Python and PySpark"
+    ],
+    "explanation": "Ronak has a good set of skills in big data technologies, but lacks experience in using Python and PySpark, which are essential for the Data Engineer role. His experience in ETL and data warehousing is also commendable. However, his lack of experience in using Kafka and PySpark is a significant weakness."
+  },
+  "cleaned_missing_skills": [
+    "Python",
+    "PySpark",
+    "Kafka"
+  ],
+  "parsed_resume_skills": [
+    "hadoop",
+    "spark",
+    "airflow",
+    "java",
+    "gcp",
+    "sql",
+    "azure",
+    "etl",
+    "bigquery"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "name": "Shubham",
+  "file": "Shubham_DataEngineer_Resume.docx",
+  "raw_response": {
+    "skills_score": 32,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 16,
+    "matched_skills": [
+      "Python",
+      "ETL",
+      "machine learning",
+      "data modeling",
+      "Spark",
+      "sql",
+      "airflow",
+      "pyspark",
+      "data warehousing",
+      "hadoop",
+      "Java",
+      "Azure",
+      "GCP",
+      "Kafka"
+    ],
+    "missing_skills": [
+      "SQL",
+      "PySpark",
+      "Kafka",
+      "Airflow",
+      "Data Modeling",
+      "Data Warehousing"
+    ],
+    "strengths": [
+      "Data Modeling",
+      "Data Warehousing"
+    ],
+    "weaknesses": [
+      "ETL",
+      "machine learning"
+    ],
+    "explanation": "Candidate has some relevant skills for the Data Engineer role, but lacks experience and specific skills like SQL, PySpark, Kafka, Airflow, Data Modeling, and Data Warehousing. The strengths lie in data modeling and data warehousing, but the candidate needs to improve in ETL and machine learning skills."
+  },
+  "cleaned_missing_skills": [
+    "Not clearly defined"
+  ],
+  "parsed_resume_skills": [
+    "python",
+    "etl",
+    "machine learning",
+    "data modeling",
+    "spark",
+    "sql",
+    "airflow",
+    "pyspark",
+    "data warehousing",
+    "hadoop",
+    "java",
+    "azure",
+    "gcp",
+    "kafka"
+  ]
+}

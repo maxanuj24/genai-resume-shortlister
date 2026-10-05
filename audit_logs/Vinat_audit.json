@@ -1,0 +1,50 @@
+{
+  "name": "Vinat",
+  "file": "Vinat_DataEngineer_Resume.pdf",
+  "raw_response": {
+    "skills_score": 32,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 12,
+    "matched_skills": [
+      "ETL",
+      "Spark",
+      "SQL",
+      "Airflow",
+      "Data Warehousing"
+    ],
+    "missing_skills": [
+      "Python",
+      "PySpark",
+      "Kafka",
+      "Data Modeling"
+    ],
+    "strengths": [
+      "Experience in ETL, Spark, and SQL",
+      "Familiarity with Airflow and Data Warehousing"
+    ],
+    "weaknesses": [
+      "Lack of Python and PySpark skills",
+      "No experience in Kafka, Data Modeling, or Cloud (AWS, GCP, Azure)"
+    ],
+    "explanation": "The candidate has some relevant skills, but lacks essential skills like Python, PySpark, and Data Modeling. Their experience in ETL, Spark, and SQL is a strength, but their lack of experience in Kafka, Data Modeling, or Cloud is a weakness. Overall, the candidate's skills are decent, but they need to fill the gaps in their skillset."
+  },
+  "cleaned_missing_skills": [
+    "Python",
+    "PySpark",
+    "Kafka",
+    "Data Modeling"
+  ],
+  "parsed_resume_skills": [
+    "etl",
+    "spark",
+    "sql",
+    "airflow",
+    "data warehousing",
+    "hadoop",
+    "java",
+    "azure",
+    "gcp",
+    "machine learning"
+  ]
+}

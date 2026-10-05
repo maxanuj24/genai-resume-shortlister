@@ -1,0 +1,56 @@
+{
+  "name": "Senior Data",
+  "file": "Shubham_DataEngineer_Resume.docx",
+  "raw_response": {
+    "skills_score": 32,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 0,
+    "matched_skills": [
+      "Python",
+      "SQL",
+      "Spark",
+      "PySpark",
+      "Kafka",
+      "Airflow",
+      "ETL",
+      "Data Modeling",
+      "Data Warehousing"
+    ],
+    "missing_skills": [
+      "AWS",
+      "GCP",
+      "Azure"
+    ],
+    "strengths": [
+      "Python",
+      "Data Modeling",
+      "Data Warehousing"
+    ],
+    "weaknesses": [
+      "AWS",
+      "GCP",
+      "Azure"
+    ],
+    "explanation": "The candidate has a strong foundation in data engineering skills, including Python, SQL, Spark, PySpark, Kafka, Airflow, ETL, Data Modeling, and Data Warehousing. However, they lack experience and education in cloud-based platforms such as AWS, GCP, and Azure. Additionally, their strengths lie in data modeling and data warehousing, which are essential skills for a Data Engineer role."
+  },
+  "cleaned_missing_skills": [
+    "AWS"
+  ],
+  "parsed_resume_skills": [
+    "airflow",
+    "gcp",
+    "sql",
+    "java",
+    "hadoop",
+    "python",
+    "etl",
+    "data warehousing",
+    "kafka",
+    "spark",
+    "pyspark",
+    "data modeling",
+    "azure",
+    "machine learning"
+  ]
+}

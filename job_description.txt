@@ -1,0 +1,16 @@
+Role: Data Engineer
+
+Required Skills:
+Python, SQL, Spark, PySpark, Kafka, Airflow, ETL, Data Modeling, Data Warehousing
+
+Preferred Skills:
+AWS, GCP, Azure, Snowflake, BigQuery, Redshift, Delta Lake, Docker, Kubernetes
+
+Experience Required:
+4-8 years
+
+Education:
+B.Tech / M.Tech in Computer Science or related field
+
+Responsibilities:
+Build ETL pipelines, manage data warehouse, optimize pipelines, handle big data, ensure data quality, streaming systems

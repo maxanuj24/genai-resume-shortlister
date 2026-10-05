@@ -1,0 +1,46 @@
+{
+  "name": "Priya Verma",
+  "file": "priya_verma_resume.pdf",
+  "raw_response": {
+    "skills_score": 20,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 10,
+    "matched_skills": [
+      "sql",
+      "python"
+    ],
+    "missing_skills": [
+      "Spark",
+      "PySpark",
+      "Kafka",
+      "Airflow",
+      "ETL",
+      "Data Modeling",
+      "Data Warehousing"
+    ],
+    "strengths": [
+      "Python",
+      "SQL"
+    ],
+    "weaknesses": [
+      "Lack of experience in Data Engineering",
+      "Limited exposure to required skills"
+    ],
+    "explanation": "While Priya has some relevant skills like Python and SQL, she lacks experience in Data Engineering and is missing several critical skills required for the role. Her strengths lie in her proficiency in Python and SQL, but she would need to acquire the missing skills and gain relevant experience to be a competitive candidate."
+  },
+  "cleaned_missing_skills": [
+    "Spark",
+    "PySpark",
+    "Kafka",
+    "Airflow",
+    "ETL",
+    "Data Modeling",
+    "Data Warehousing"
+  ],
+  "parsed_resume_skills": [
+    "sql",
+    "python",
+    "pandas"
+  ]
+}

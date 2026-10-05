@@ -1,0 +1,56 @@
+{
+  "name": "Ronak Kumar",
+  "file": "Ronak.pdf",
+  "raw_response": {
+    "skills_score": 20,
+    "experience_score": 0,
+    "education_score": 0,
+    "fit_score": 0,
+    "matched_skills": [
+      "ETL",
+      "BigQuery",
+      "Spark",
+      "SQL",
+      "Airflow",
+      "Hadoop"
+    ],
+    "missing_skills": [
+      "Python",
+      "PySpark",
+      "Kafka",
+      "Data Modeling"
+    ],
+    "strengths": [
+      "ETL",
+      "BigQuery",
+      "Spark",
+      "SQL",
+      "Airflow",
+      "Hadoop"
+    ],
+    "weaknesses": [
+      "Python",
+      "PySpark",
+      "Kafka",
+      "Data Modeling"
+    ],
+    "explanation": "The candidate has some relevant skills, but lacks essential skills in Python, PySpark, and Data Modeling, which are crucial for a Data Engineer role. To improve their fit, they should focus on acquiring these skills."
+  },
+  "cleaned_missing_skills": [
+    "Python",
+    "PySpark",
+    "Kafka",
+    "Data Modeling"
+  ],
+  "parsed_resume_skills": [
+    "etl",
+    "bigquery",
+    "spark",
+    "sql",
+    "airflow",
+    "hadoop",
+    "java",
+    "azure",
+    "gcp"
+  ]
+}
