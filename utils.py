@@ -20,13 +20,23 @@ def cache_key(prompt):
 def call_ollama(model, prompt):
     key = cache_key(prompt)
 
-    if key in cache:
+    # allow bypassing the cache for forced refreshes
+    force_refresh = os.environ.get("FORCE_OLLAMA_REFRESH", "0") in ("1", "true", "True")
+    if key in cache and not force_refresh:
         return cache[key]
 
+    # allow temperature to be controlled via env var OLLAMA_TEMPERATURE (defaults to 0)
     try:
+        temp_raw = os.environ.get("OLLAMA_TEMPERATURE", "0")
+        try:
+            temperature = float(temp_raw)
+        except Exception:
+            temperature = 0.0
+
         res = requests.post(
             OLLAMA_URL,
-            json={"model": model, "prompt": prompt, "stream": False},
+            # temperature can be adjusted; stream disabled for synchronous responses
+            json={"model": model, "prompt": prompt, "stream": False, "temperature": temperature},
             timeout=60
         )
         output = res.json().get("response", "")

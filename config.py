@@ -106,14 +106,15 @@ SKILL_SYNONYMS = {
 # ===========================
 # Adjust these to prioritize different evaluation criteria
 SCORING_WEIGHTS = {
-    "skills_score_max": 40,        # Maximum points for skills
+    "skills_score_max": 50,        # Maximum points for skills (increased to give more weight to skills)
     "experience_score_max": 30,    # Maximum points for experience
     "education_score_max": 10,     # Maximum points for education
     "fit_score_max": 20,           # Maximum points for cultural/role fit
 }
 
 # Penalty for missing required skills (multiplied by number of missing skills)
-REQUIRED_SKILL_PENALTY_PER_SKILL = 8
+# Lowered from 8 to 4 to reduce impact of single missing required skills
+REQUIRED_SKILL_PENALTY_PER_SKILL = 4
 
 # ===========================
 # EXTRACTION SETTINGS (Job-agnostic)

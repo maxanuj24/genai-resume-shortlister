@@ -48,6 +48,22 @@ def main():
         help="OpenAI API Key (optional)"
     )
     parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable LLM calls and use deterministic matching only"
+    )
+    parser.add_argument(
+        "--ollama_temp",
+        type=float,
+        default=0.0,
+        help="Temperature for Ollama LLM (default: 0.0)"
+    )
+    parser.add_argument(
+        "--force-llm-refresh",
+        action="store_true",
+        help="Force refresh LLM responses by bypassing cache (useful to get fresh outputs)"
+    )
+    parser.add_argument(
         "--output_file",
         default="results.csv",
         help="Output CSV file path (default: results.csv)"
@@ -57,6 +73,17 @@ def main():
 
     if args.openai_key:
         os.environ["OPENAI_API_KEY"] = args.openai_key
+
+    # set ollama temperature and optionally disable LLM
+    os.environ["OLLAMA_TEMPERATURE"] = str(args.ollama_temp)
+    if args.no_llm:
+        os.environ["DISABLE_LLM"] = "1"
+    else:
+        os.environ.pop("DISABLE_LLM", None)
+    if args.force_llm_refresh:
+        os.environ["FORCE_OLLAMA_REFRESH"] = "1"
+    else:
+        os.environ.pop("FORCE_OLLAMA_REFRESH", None)
 
     if not os.path.exists(args.jd_file):
         print(f"Error: Job description file not found at {args.jd_file}")
@@ -76,7 +103,7 @@ def main():
         if file.endswith((".pdf", ".docx", ".txt")):
             path = os.path.join(args.resume_folder, file)
             resume = parse_resume(path)
-            score = match_candidate(resume, jd)
+            score = match_candidate(resume, jd, use_llm=(not args.no_llm))
 
             results.append({
                 "file": file,

@@ -2,49 +2,64 @@
   "name": "Vinat",
   "file": "Vinat_DataEngineer_Resume.pdf",
   "raw_response": {
-    "skills_score": 32,
-    "experience_score": 0,
-    "education_score": 0,
-    "fit_score": 12,
+    "skills_score": 0.85,
+    "experience_score": 0.9,
+    "education_score": 0.8,
+    "fit_score": 0.85,
     "matched_skills": [
-      "ETL",
-      "Spark",
-      "SQL",
-      "Airflow",
-      "Data Warehousing"
+      "airflow",
+      "data warehousing",
+      "etl",
+      "spark",
+      "sql",
+      "gcp",
+      "azure"
     ],
     "missing_skills": [
-      "Python",
-      "PySpark",
-      "Kafka",
-      "Data Modeling"
+      "kafka",
+      "pyspark",
+      "python",
+      "data modeling"
+    ],
+    "preferred_missing_skills": [
+      "aws",
+      "bigquery",
+      "redshift",
+      "delta lake",
+      "docker",
+      "kubernetes"
     ],
     "strengths": [
-      "Experience in ETL, Spark, and SQL",
-      "Familiarity with Airflow and Data Warehousing"
+      "candidate has relevant skills and experience for the job",
+      "candidate has experience with gcp and azure"
     ],
     "weaknesses": [
-      "Lack of Python and PySpark skills",
-      "No experience in Kafka, Data Modeling, or Cloud (AWS, GCP, Azure)"
+      "candidate lacks experience with pyspark, python, and data modeling",
+      "candidate lacks experience with bigquery, redshift, delta lake, docker, and kubernetes"
     ],
-    "explanation": "The candidate has some relevant skills, but lacks essential skills like Python, PySpark, and Data Modeling. Their experience in ETL, Spark, and SQL is a strength, but their lack of experience in Kafka, Data Modeling, or Cloud is a weakness. Overall, the candidate's skills are decent, but they need to fill the gaps in their skillset."
+    "explanation": "The candidate has a good set of skills and experience that match the job requirements. However, they lack experience with some required skills like pyspark, python, and data modeling. They also lack experience with some preferred skills like aws, bigquery, redshift, delta lake, docker, and kubernetes. Nevertheless, their strengths in gcp and azure skills make them a good fit for the job.",
+    "confidence": 0.9
   },
   "cleaned_missing_skills": [
-    "Python",
-    "PySpark",
-    "Kafka",
-    "Data Modeling"
+    "data modeling",
+    "kafka",
+    "pyspark",
+    "python"
   ],
   "parsed_resume_skills": [
-    "etl",
-    "spark",
-    "sql",
-    "airflow",
-    "data warehousing",
-    "hadoop",
+    "ci/cd",
     "java",
+    "data warehousing",
+    "etl",
     "azure",
-    "gcp",
-    "machine learning"
+    "go",
+    "machine learning",
+    "spark",
+    "oracle",
+    "airflow",
+    "hadoop",
+    "gis",
+    "sql",
+    "gcp"
   ]
 }

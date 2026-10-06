@@ -332,7 +332,75 @@ Extract and return the following as JSON:
 Focus on extracting skills mentioned in the job description.
 Return only valid JSON, no additional text.
 """
-    return call_ollama(MODELS["jd_parser"], prompt)
+    data = call_ollama(MODELS["jd_parser"], prompt)
+    if isinstance(data, dict) and (data.get("required_skills") or data.get("preferred_skills") or data.get("job_title")):
+        return data
+
+    raw = (text or "").replace("\r", "\n")
+    jd = {
+        "job_title": "",
+        "company": "",
+        "required_skills": [],
+        "preferred_skills": [],
+        "experience": "",
+        "education": "",
+        "key_responsibilities": [],
+        "job_type": "",
+        "location": ""
+    }
+
+    title_match = re.search(r"(?:role|position|job title)\s*[:\-]?\s*([^\n]+)", raw, re.I)
+    if title_match:
+        jd["job_title"] = title_match.group(1).strip()
+
+    role_match = re.search(r"\bRole\s*:\s*([^\n]+)", raw, re.I)
+    if role_match:
+        jd["job_title"] = role_match.group(1).strip()
+
+    experience_match = re.search(r"(?:experience required|experience|years of experience)\s*[:\-]?\s*([^\n]+)", raw, re.I)
+    if experience_match:
+        jd["experience"] = experience_match.group(1).strip()
+
+    edu_match = re.search(r"(?:education)\s*[:\-]?\s*([^\n]+)", raw, re.I)
+    if edu_match:
+        jd["education"] = edu_match.group(1).strip()
+
+    def extract_skill_list(section_name):
+        m = re.search(rf"{re.escape(section_name)}\s*:?\s*\n?(.*?)(?=\n\s*(?:Preferred Skills|Experience Required|Experience|Education|Responsibilities|$))", raw, re.I | re.S)
+        if not m:
+            return []
+        block = m.group(1)
+        items = re.split(r"[,\n]+", block)
+        cleaned = []
+        for item in items:
+            item = item.strip().strip("•-* ")
+            if not item:
+                continue
+            cleaned.append(item)
+        return cleaned
+
+    jd["required_skills"] = extract_skill_list("Required Skills")
+    jd["preferred_skills"] = extract_skill_list("Preferred Skills")
+
+    if not jd["required_skills"]:
+        for label in ["Must Have", "Must-Have", "Required", "Core Skills"]:
+            jd["required_skills"] = extract_skill_list(label)
+            if jd["required_skills"]:
+                break
+
+    if not jd["preferred_skills"]:
+        for label in ["Nice to Have", "Nice-to-Have", "Preferred", "Good to Have"]:
+            jd["preferred_skills"] = extract_skill_list(label)
+            if jd["preferred_skills"]:
+                break
+
+    jd["key_responsibilities"] = []
+    resp_match = re.search(r"(?:responsibilities|responsibility)\s*[:\-]?\s*\n?(.*?)(?=\n\s*(?:Education|Requirements|Skills|$))", raw, re.I | re.S)
+    if resp_match:
+        resp_text = resp_match.group(1)
+        jd["key_responsibilities"] = [p.strip(" •-*\n") for p in re.split(r"[\n;]+", resp_text) if p.strip()]
+
+    return jd
 
 def normalize_name_like_candidate(cand):
     cand = re.sub(r"\s+", " ", str(cand)).strip()

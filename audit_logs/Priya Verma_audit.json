@@ -2,45 +2,56 @@
   "name": "Priya Verma",
   "file": "priya_verma_resume.pdf",
   "raw_response": {
-    "skills_score": 20,
-    "experience_score": 0,
-    "education_score": 0,
-    "fit_score": 10,
+    "skills_score": 0.6,
+    "experience_score": 0.4,
+    "education_score": 0.2,
+    "fit_score": 0.8,
     "matched_skills": [
-      "sql",
-      "python"
+      "python",
+      "sql"
     ],
     "missing_skills": [
-      "Spark",
-      "PySpark",
-      "Kafka",
-      "Airflow",
-      "ETL",
-      "Data Modeling",
-      "Data Warehousing"
+      "airflow",
+      "data modeling",
+      "data warehousing",
+      "etl",
+      "kafka",
+      "pyspark",
+      "spark"
+    ],
+    "preferred_missing_skills": [
+      "aws",
+      "azure",
+      "bigquery",
+      "delta lake",
+      "docker",
+      "gcp",
+      "kubernetes",
+      "redshift",
+      "snowflake"
     ],
     "strengths": [
-      "Python",
-      "SQL"
+      "2 years of experience with Python and SQL skills"
     ],
     "weaknesses": [
-      "Lack of experience in Data Engineering",
-      "Limited exposure to required skills"
+      "Lack of experience in Airflow, data modeling, and data warehousing"
     ],
-    "explanation": "While Priya has some relevant skills like Python and SQL, she lacks experience in Data Engineering and is missing several critical skills required for the role. Her strengths lie in her proficiency in Python and SQL, but she would need to acquire the missing skills and gain relevant experience to be a competitive candidate."
+    "explanation": "Candidate has a good foundation in Python and SQL skills, but lacks experience in certain areas. They need to focus on building skills in Airflow, data modeling, and data warehousing to be a strong candidate.",
+    "confidence": 0.8
   },
   "cleaned_missing_skills": [
-    "Spark",
-    "PySpark",
-    "Kafka",
-    "Airflow",
-    "ETL",
-    "Data Modeling",
-    "Data Warehousing"
+    "airflow",
+    "data modeling",
+    "data warehousing",
+    "etl",
+    "kafka",
+    "pyspark",
+    "spark"
   ],
   "parsed_resume_skills": [
-    "sql",
+    "pandas",
     "python",
-    "pandas"
+    "rds",
+    "sql"
   ]
 }

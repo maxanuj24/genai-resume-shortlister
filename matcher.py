@@ -1,5 +1,6 @@
 import json
 import re
+import os
 from utils import call_ollama
 from config import (
     SKILL_SYNONYMS, SCORING_WEIGHTS, REQUIRED_SKILL_PENALTY_PER_SKILL,
@@ -10,15 +11,54 @@ from config import (
 def normalize(val, max_val):
     try:
         val = float(val)
+        # Support different scales returned by LLM or heuristics:
+        # - 0..1 (probability-like) -> map to 0..max_val
+        # - 0..10 (0-10 scale) -> map to 0..max_val
+        # - >10 (already in points) -> cap at max_val
+        if val <= 1:
+            return int(val * max_val)
         if val <= 10:
             return int((val / 10) * max_val)
         return min(int(val), max_val)
-    except:
+    except Exception:
         return 0
 
 
 def safe_list(val, fallback):
     return val if isinstance(val, list) and val else fallback
+
+
+def merge_skill_lists(llm_list, fallback_list):
+    """Merge two lists of skills/strings deterministically: canonicalize, dedupe and sort."""
+    out = set()
+    for v in (fallback_list or []):
+        if isinstance(v, str) and v.strip():
+            out.add(canonical_skill_name(v))
+    for v in (llm_list or []):
+        if isinstance(v, str) and v.strip():
+            out.add(canonical_skill_name(v))
+    # Remove empty strings
+    out = {o for o in out if o}
+    return sorted(out)
+
+
+def merge_text_lists(llm_list, fallback_list):
+    """Merge non-skill textual lists (strengths/weaknesses) deterministically."""
+    out = []
+    seen = set()
+    for v in (fallback_list or []):
+        if isinstance(v, str) and v.strip():
+            t = v.strip()
+            if t not in seen:
+                seen.add(t)
+                out.append(t)
+    for v in (llm_list or []):
+        if isinstance(v, str) and v.strip():
+            t = v.strip()
+            if t not in seen:
+                seen.add(t)
+                out.append(t)
+    return out
 
 
 def canonical_skill_name(skill):
@@ -56,69 +96,126 @@ def skill_is_present_in_resume(skill, resume_skills):
     return canonical in resume_skills
 
 
-def match_candidate(resume, jd):
-
-    prompt = f"""
-You are a professional ATS (Applicant Tracking System) evaluator.
-Your task is to fairly and objectively evaluate a candidate against a job description.
-
-EVALUATION CRITERIA:
-- Skills Match: How many required/preferred skills does the candidate have?
-- Experience: Is the candidate's experience level aligned with the role?
-- Education: Does the candidate have relevant educational background?
-- Overall Fit: Is this a good cultural/role match?
-
-MANDATORY RESPONSE REQUIREMENTS:
-- Provide at least {MIN_STRENGTHS} concrete strengths
-- Identify at least {MIN_MISSING_SKILLS} areas for improvement
-- Write a non-empty explanation for your assessment
-- Be objective and fair
-
-CANDIDATE PROFILE:
-{json.dumps(resume)}
-
-JOB DESCRIPTION:
-{json.dumps(jd)}
-
-SCORING BREAKDOWN:
-- skills_score: 0-{SCORING_WEIGHTS['skills_score_max']} (Match between candidate skills and job requirements)
-- experience_score: 0-{SCORING_WEIGHTS['experience_score_max']} (Experience level alignment)
-- education_score: 0-{SCORING_WEIGHTS['education_score_max']} (Educational qualification relevance)
-- fit_score: 0-{SCORING_WEIGHTS['fit_score_max']} (Overall role and cultural fit)
-
-Return a JSON response with this exact structure:
-{{
-"skills_score": <number>,
-"experience_score": <number>,
-"education_score": <number>,
-"fit_score": <number>,
-"matched_skills": [<list of skills candidate has>],
-"missing_skills": [<list of required skills candidate lacks>],
-"strengths": [<list of candidate strengths>],
-"weaknesses": [<list of candidate gaps>],
-"explanation": "<detailed explanation of assessment>"
-}}
-"""
-
-    res = call_ollama(MODELS["matcher"], prompt)
-
-    skills = normalize(res.get("skills_score", 0), SCORING_WEIGHTS["skills_score_max"])
-    exp = normalize(res.get("experience_score", 0), SCORING_WEIGHTS["experience_score_max"])
-    edu = normalize(res.get("education_score", 0), SCORING_WEIGHTS["education_score_max"])
-    fit = normalize(res.get("fit_score", 0), SCORING_WEIGHTS["fit_score_max"])
-
+def match_candidate(resume, jd, use_llm=True):
+    # Step 1/2: normalize JD and resume skills (do this before any LLM call so we can feed
+    # the deterministic lists into the prompt. This helps the model avoid hallucination
+    # and only suggest additions.
     try:
-        req_skills = [s.lower() for s in (jd.get("required_skills") or jd.get("skills") or []) if isinstance(s, str)]
+        req_skills = [
+            canonical_skill_name(s)
+            for s in (jd.get("required_skills") or jd.get("skills") or [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
     except Exception:
         req_skills = []
 
     try:
-        preferred_skills = [s.lower() for s in (jd.get("preferred_skills") or []) if isinstance(s, str)]
+        preferred_skills = [
+            canonical_skill_name(s)
+            for s in (jd.get("preferred_skills") or [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
     except Exception:
         preferred_skills = []
 
     try:
-        resume_skills = [s.lower() for s in resume.get("skills", []) if isinstance(s, str)]
+        resume_skills = [
+            canonical_skill_name(s)
+            for s in resume.get("skills", [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
+    except Exception:
+        resume_skills = []
+
+    # make sets for deterministic matching
+    resume_skill_set = set(resume_skills)
+    required_skill_set = set(req_skills)
+    preferred_skill_set = set(preferred_skills)
+
+    # Step 3: exact skill match logic with synonym support (deterministic)
+    matched_required = sorted({s for s in required_skill_set if skill_is_present_in_resume(s, resume_skill_set)})
+    required_missing = sorted({s for s in required_skill_set if not skill_is_present_in_resume(s, resume_skill_set)})
+    matched_preferred = sorted({s for s in preferred_skill_set if skill_is_present_in_resume(s, resume_skill_set)})
+    preferred_missing = sorted({s for s in preferred_skill_set if not skill_is_present_in_resume(s, resume_skill_set)})
+
+    mentioned = sorted(set(matched_required) | set(matched_preferred))
+    matched = mentioned[:] if mentioned else sorted(resume_skill_set)
+    experienced = mentioned[:] if mentioned else sorted(resume_skill_set)
+
+    # Now optionally call the LLM with a prompt that includes these deterministic lists.
+    # The prompt instructs the model to NOT remove or contradict the provided lists and to
+    # only suggest additional missing skills or strengths/weaknesses. Ask for canonical
+    # lowercase skill names and a confidence score so we can weigh suggestions.
+    res = {}
+    if use_llm and os.environ.get("DISABLE_LLM", "0") not in ("1", "true", "True"):
+        prompt = f"""
+You are a professional ATS evaluator. Use the deterministic lists provided below and DO NOT remove or contradict them.
+Only suggest additional items if you are confident and explain why. Return JSON only with this structure:
+{{
+  "skills_score": <number>,
+  "experience_score": <number>,
+  "education_score": <number>,
+  "fit_score": <number>,
+  "matched_skills": [<lowercase canonical skills>],
+  "missing_skills": [<lowercase canonical skills - only additional missing beyond deterministic lists>],
+  "preferred_missing_skills": [<lowercase canonical skills - only additional preferred missing>],
+  "strengths": [<text>],
+  "weaknesses": [<text>],
+  "explanation": "<assessment>",
+  "confidence": <0-1 float optional>
+}}
+
+DETERMINISTIC LISTS (do not alter):
+required_skills: {json.dumps(sorted(req_skills))}
+preferred_skills: {json.dumps(sorted(preferred_skills))}
+resume_skills: {json.dumps(sorted(resume_skills))}
+matched_required: {json.dumps(sorted(matched_required))}
+required_missing: {json.dumps(sorted(required_missing))}
+preferred_missing: {json.dumps(sorted(preferred_missing))}
+
+CANDIDATE RAW PROFILE:
+{json.dumps(resume, sort_keys=True)}
+
+JOB DESCRIPTION RAW:
+{json.dumps(jd, sort_keys=True)}
+"""
+        try:
+            res = call_ollama(MODELS["matcher"], prompt)
+        except Exception:
+            res = {}
+    else:
+        res = {}
+
+    skills_score = normalize(res.get("skills_score", 0), SCORING_WEIGHTS["skills_score_max"])
+    exp_score = normalize(res.get("experience_score", 0), SCORING_WEIGHTS["experience_score_max"])
+    edu_score = normalize(res.get("education_score", 0), SCORING_WEIGHTS["education_score_max"])
+    fit_score = normalize(res.get("fit_score", 0), SCORING_WEIGHTS["fit_score_max"])
+
+    # Step 2: normalize JD and resume skills
+    try:
+        req_skills = [
+            canonical_skill_name(s)
+            for s in (jd.get("required_skills") or jd.get("skills") or [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
+    except Exception:
+        req_skills = []
+
+    try:
+        preferred_skills = [
+            canonical_skill_name(s)
+            for s in (jd.get("preferred_skills") or [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
+    except Exception:
+        preferred_skills = []
+
+    try:
+        resume_skills = [
+            canonical_skill_name(s)
+            for s in resume.get("skills", [])
+            if isinstance(s, str) and canonical_skill_name(s)
+        ]
     except Exception:
         resume_skills = []
 
@@ -126,28 +223,35 @@ Return a JSON response with this exact structure:
     required_skill_set = set(req_skills)
     preferred_skill_set = set(preferred_skills)
 
-    # HR-style scoring: required skills matter more than preferred ones.
-    matched_required = required_skill_set & resume_skill_set
-    required_missing = required_skill_set - resume_skill_set
-    required_missing_count = len(required_missing)
-    req_coverage = len(matched_required) / max(len(required_skill_set), 1)
-    skills = max(skills, int(req_coverage * SCORING_WEIGHTS["skills_score_max"]))
+    # Step 3: exact skill match logic with synonym support
+    matched_required = sorted({s for s in required_skill_set if skill_is_present_in_resume(s, resume_skill_set)})
+    required_missing = sorted({s for s in required_skill_set if not skill_is_present_in_resume(s, resume_skill_set)})
+    matched_preferred = sorted({s for s in preferred_skill_set if skill_is_present_in_resume(s, resume_skill_set)})
+    preferred_missing = sorted({s for s in preferred_skill_set if not skill_is_present_in_resume(s, resume_skill_set)})
 
-    # Penalize candidates who miss multiple hard requirements.
-    required_penalty = min(SCORING_WEIGHTS["skills_score_max"], required_missing_count * REQUIRED_SKILL_PENALTY_PER_SKILL)
+    mentioned = sorted(set(matched_required) | set(matched_preferred))
+    matched = mentioned if mentioned else sorted(resume_skill_set)
+    experienced = mentioned if mentioned else sorted(resume_skill_set)
 
-    if req_skills:
-        matched_count = len(required_skill_set & resume_skill_set)
-        skill_score_det = int((matched_count / max(len(required_skill_set), 1)) * SCORING_WEIGHTS["skills_score_max"])
-        skills = max(skills, skill_score_det)
+    # Step 4: score calculation
+    if required_skill_set:
+        coverage = len(matched_required) / len(required_skill_set)
+    else:
+        coverage = 1.0
+
+    skills_score = max(skills_score, int(coverage * SCORING_WEIGHTS["skills_score_max"]))
+    required_penalty = min(
+        SCORING_WEIGHTS["skills_score_max"],
+        len(required_missing) * REQUIRED_SKILL_PENALTY_PER_SKILL
+    )
 
     def parse_exp_range(exp_str):
         if not exp_str or not isinstance(exp_str, str):
             return None, None
-        m = re.search(r"(\d+)\s*-\s*(\d+)", exp_str)
+        m = re.search(r"(\d+)\s*[-–—]\s*(\d+)", exp_str)
         if m:
             return int(m.group(1)), int(m.group(2))
-        m = re.search(r"(\d+)\+", exp_str)
+        m = re.search(r"(\d+)\s*\+", exp_str)
         if m:
             v = int(m.group(1))
             return v, v + 10
@@ -161,70 +265,88 @@ Return a JSON response with this exact structure:
     yrs = resume.get("years_of_experience") or 0
     if jd_exp_min:
         if yrs >= jd_exp_min:
-            exp_det = 30
+            exp_score = max(exp_score, 30)
         else:
-            exp_det = int((yrs / max(jd_exp_min, 1)) * 30)
-        exp = max(exp, exp_det)
+            exp_score = max(exp_score, int((yrs / max(jd_exp_min, 1)) * 30))
+    else:
+        exp_score = max(exp_score, min(30, max(0, int(yrs) * 3)))
 
-    # Base score remains positive, but missing required skills now cut it down.
-    final = max(0, skills + exp + edu + fit - required_penalty)
-
-    # Hard reject rule for HR filtering: if too many critical gaps remain, reject regardless of raw model score.
-    if required_missing_count >= 5:
+    final = max(0, skills_score + exp_score + edu_score + fit_score - required_penalty)
+    if len(required_missing) >= 5:
         final = min(final, 49)
 
-    matched = safe_list(res.get("matched_skills"), resume.get("skills", [])[:3])
-    missing = safe_list(res.get("missing_skills"), ["Not clearly defined"])
-    strengths = safe_list(res.get("strengths"), ["Relevant technical background"])
-    weaknesses = safe_list(res.get("weaknesses"), ["Skill gaps exist"])
+    # Step 5: strengths / weaknesses / missing skills derived from deterministic matching
+    strengths = []
+    if matched_required:
+        strengths.append("Required skills present: " + ", ".join(matched_required[:3]))
+    if matched_preferred:
+        strengths.append("Preferred skills present: " + ", ".join(matched_preferred[:3]))
+    if yrs:
+        strengths.append(f"{yrs} years of experience")
+    if not strengths:
+        strengths = ["Relevant technical background"]
 
-    explanation = res.get("explanation") or "Candidate partially matches job requirements."
-
-    try:
-        resume_skill_set = {canonical_skill_name(s) for s in resume.get("skills", []) if isinstance(s, str)}
-        cleaned_missing = []
-        for m in missing:
-            if not isinstance(m, str):
-                continue
-            if skill_is_present_in_resume(m, resume_skill_set):
-                continue
-            cleaned_missing.append(m)
-        missing = cleaned_missing if cleaned_missing else ["Not clearly defined"]
-    except Exception:
-        pass
-
-    preferred_missing = []
-    try:
-        if preferred_skills:
-            preferred_norm = {canonical_skill_name(p) for p in preferred_skills}
-            for m in missing:
-                if not isinstance(m, str):
-                    continue
-                if canonical_skill_name(m) in preferred_norm:
-                    continue
-                preferred_missing.append(m)
-    except Exception:
-        pass
-
+    weaknesses = []
+    if required_missing:
+        weaknesses.append("Missing required skills: " + ", ".join(required_missing[:3]))
     if preferred_missing:
-        missing = preferred_missing
+        weaknesses.append("Missing preferred skills: " + ", ".join(preferred_missing[:3]))
+    if not weaknesses:
+        weaknesses = ["No major gaps identified"]
 
-    mentioned = sorted(required_skill_set & resume_skill_set)
-    mentioned += sorted(preferred_skill_set & resume_skill_set)
-    mentioned = sorted(set(mentioned))
-    experienced = sorted(set(normalize_skill_list(matched)))
-    if not experienced:
-        experienced = mentioned[:]
+    if required_missing:
+        missing_skills = required_missing
+    elif preferred_missing:
+        missing_skills = preferred_missing
+    else:
+        missing_skills = ["Not clearly defined"]
 
-    audit = {
-        "raw_response": res,
-        "cleaned_missing_skills": missing,
-        "parsed_resume_skills": resume.get("skills", []),
-        "mentioned_skills": mentioned,
-        "experienced_skills": experienced,
-        "required_missing_count": required_missing_count,
-        "required_penalty": required_penalty,
-    }
+    preferred_missing_skills = preferred_missing if preferred_missing else []
+
+    explanation = (
+        f"Candidate matches {len(matched_required)} required skills and {len(matched_preferred)} preferred skills. "
+        f"The profile has {yrs} years of experience and key gaps are {', '.join(missing_skills[:3]) if missing_skills else 'not clearly defined'}. "
+        f"This is an overall {'strong fit' if final >= 60 else 'partial fit'} for the role."
+    )
+
+    # Step 6: merge with LLM output only when it adds extra value, but never overwrite concrete results
+    if isinstance(res, dict):
+        if res.get("matched_skills"):
+            matched = safe_list(res.get("matched_skills"), matched)
+        if res.get("missing_skills"):
+            cleaned = [m for m in safe_list(res.get("missing_skills"), []) if isinstance(m, str) and m.strip()]
+            if cleaned:
+                missing_skills = cleaned
+        if res.get("strengths"):
+            cleaned = [s for s in safe_list(res.get("strengths"), []) if isinstance(s, str) and s.strip()]
+            if cleaned:
+                strengths = cleaned
+        if res.get("weaknesses"):
+            cleaned = [w for w in safe_list(res.get("weaknesses"), []) if isinstance(w, str) and w.strip()]
+            if cleaned:
+                weaknesses = cleaned
+        if res.get("explanation"):
+            explanation = res.get("explanation")
+
+    # Final safety nets and canonicalization
+    if not missing_skills or (missing_skills == ["Not clearly defined"] and (required_missing or preferred_missing)):
+        missing_skills = required_missing or preferred_missing or ["Not clearly defined"]
+    if not preferred_missing_skills and preferred_missing:
+        preferred_missing_skills = preferred_missing
+    if not matched:
+        matched = mentioned if mentioned else sorted(resume_skill_set)
+
+    # ensure all skill lists are canonical and sorted
+    matched = sorted({canonical_skill_name(s) for s in matched if canonical_skill_name(s)})
+    mentioned = sorted({canonical_skill_name(s) for s in mentioned if canonical_skill_name(s)})
+    experienced = sorted({canonical_skill_name(s) for s in experienced if canonical_skill_name(s)})
+    missing_skills = sorted({canonical_skill_name(s) for s in (missing_skills or []) if canonical_skill_name(s)}) if missing_skills and missing_skills != ["Not clearly defined"] else missing_skills
+    preferred_missing_skills = sorted({canonical_skill_name(s) for s in (preferred_missing_skills or []) if canonical_skill_name(s)}) if preferred_missing_skills else []
+
+    if not strengths:
+        strengths = ["Relevant technical background"]
+    if not weaknesses:
+        weaknesses = ["No major gaps identified"]
 
     if final >= 80:
         decision = "Strong Hire"
@@ -233,16 +355,27 @@ Return a JSON response with this exact structure:
     else:
         decision = "Reject"
 
+    audit = {
+        "raw_response": res,
+        "cleaned_missing_skills": missing_skills,
+        "parsed_resume_skills": resume.get("skills", []),
+        "mentioned_skills": mentioned,
+        "experienced_skills": experienced,
+        "required_missing_count": len(required_missing),
+        "required_penalty": required_penalty,
+    }
+
     return {
         "final_score": int(final),
         "decision": decision,
         "strengths": strengths,
-        "missing_skills": missing,
+        "missing_skills": missing_skills,
         "mentioned_skills": mentioned,
         "experienced_skills": experienced,
-        "preferred_missing_skills": preferred_missing,
+        "preferred_missing_skills": preferred_missing_skills,
         "matched_skills": matched,
         "weaknesses": weaknesses,
         "explanation": explanation,
-        "audit": audit
+        "audit": audit,
     }
+

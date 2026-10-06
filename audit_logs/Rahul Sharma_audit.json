@@ -2,46 +2,62 @@
   "name": "Rahul Sharma",
   "file": "rahul_sharma_resume.pdf",
   "raw_response": {
-    "skills_score": 24,
-    "experience_score": 0,
-    "education_score": 0,
-    "fit_score": 4,
+    "skills_score": 0.7,
+    "experience_score": 0.5,
+    "education_score": 0.3,
+    "fit_score": 0.8,
     "matched_skills": [
       "python",
       "sql"
     ],
     "missing_skills": [
-      "Spark",
-      "PySpark",
-      "Kafka",
-      "Airflow",
-      "ETL",
-      "Data Modeling",
-      "Data Warehousing"
+      "airflow",
+      "data modeling",
+      "data warehousing",
+      "etl",
+      "kafka",
+      "pyspark",
+      "spark"
+    ],
+    "preferred_missing_skills": [
+      "aws",
+      "azure",
+      "bigquery",
+      "delta lake",
+      "docker",
+      "gcp",
+      "kubernetes",
+      "redshift",
+      "snowflake"
     ],
     "strengths": [
-      "python",
-      "sql"
+      "machine learning",
+      "deep learning",
+      "nlp",
+      "tensorflow"
     ],
     "weaknesses": [
-      "lack of experience in Data Engineer skills"
+      "lack of experience in ETL, data warehousing, and data modeling"
     ],
-    "explanation": "The candidate has some relevant skills like Python and SQL, but lacks experience and skills required for the Data Engineer role. He has no experience in Data Engineering tools and technologies, which is a major concern."
+    "explanation": "Rahul Sharma has a strong foundation in machine learning and deep learning, which aligns well with the job requirements. However, he lacks experience in ETL, data warehousing, and data modeling, which are essential skills for a Data Engineer. His skills in Python and SQL are a good match, but he needs to develop skills in Airflow, Kafka, PySpark, and Spark. Additionally, he may benefit from learning AWS, Azure, BigQuery, Delta Lake, Docker, GCP, Kubernetes, and Redshift, which are preferred skills for the job.",
+    "confidence": 0.8
   },
   "cleaned_missing_skills": [
-    "Spark",
-    "PySpark",
-    "Kafka",
-    "Airflow",
-    "ETL",
-    "Data Modeling",
-    "Data Warehousing"
+    "airflow",
+    "data modeling",
+    "data warehousing",
+    "etl",
+    "kafka",
+    "pyspark",
+    "spark"
   ],
   "parsed_resume_skills": [
-    "python",
     "deep learning",
-    "sql",
     "nlp",
-    "machine learning"
+    "tensorflow",
+    "machine learning",
+    "python",
+    "scikit-learn",
+    "sql"
   ]
 }

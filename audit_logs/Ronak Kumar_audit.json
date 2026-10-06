@@ -2,55 +2,66 @@
   "name": "Ronak Kumar",
   "file": "Ronak.pdf",
   "raw_response": {
-    "skills_score": 20,
-    "experience_score": 0,
-    "education_score": 0,
-    "fit_score": 0,
+    "skills_score": 0.8,
+    "experience_score": 0.9,
+    "education_score": 0.7,
+    "fit_score": 0.85,
     "matched_skills": [
-      "ETL",
-      "BigQuery",
-      "Spark",
-      "SQL",
-      "Airflow",
-      "Hadoop"
+      "ci/cd",
+      "scala",
+      "java",
+      "bigquery",
+      "etl",
+      "azure",
+      "go",
+      "spark",
+      "airflow",
+      "sql",
+      "gcp"
     ],
     "missing_skills": [
-      "Python",
-      "PySpark",
-      "Kafka",
-      "Data Modeling"
+      "data modeling",
+      "data warehousing",
+      "kafka",
+      "pyspark",
+      "python"
+    ],
+    "preferred_missing": [
+      "aws",
+      "delta lake",
+      "docker",
+      "kubernetes",
+      "redshift",
+      "snowflake"
     ],
     "strengths": [
-      "ETL",
-      "BigQuery",
-      "Spark",
-      "SQL",
-      "Airflow",
-      "Hadoop"
+      "candidate has strong skills in bigquery, etl, and spark"
     ],
     "weaknesses": [
-      "Python",
-      "PySpark",
-      "Kafka",
-      "Data Modeling"
+      "candidate lacks skills in data modeling, data warehousing, and kafka"
     ],
-    "explanation": "The candidate has some relevant skills, but lacks essential skills in Python, PySpark, and Data Modeling, which are crucial for a Data Engineer role. To improve their fit, they should focus on acquiring these skills."
+    "explanation": "candidate has a strong skill set in bigquery, etl, and spark, which aligns well with the job requirements. However, they are missing key skills in data modeling, data warehousing, and kafka, which may impact their ability to perform certain job responsibilities. Additionally, they do not have experience with python, which is a required skill.",
+    "confidence": 0.9
   },
   "cleaned_missing_skills": [
-    "Python",
-    "PySpark",
-    "Kafka",
-    "Data Modeling"
+    "data modeling",
+    "data warehousing",
+    "kafka",
+    "pyspark",
+    "python"
   ],
   "parsed_resume_skills": [
-    "etl",
+    "ci/cd",
+    "scala",
+    "java",
     "bigquery",
+    "etl",
+    "azure",
+    "go",
     "spark",
-    "sql",
     "airflow",
     "hadoop",
-    "java",
-    "azure",
+    "sql",
     "gcp"
   ]
 }
